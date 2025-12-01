@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Auth } from './pages/Auth';
-import { ChatPage } from './pages/Chat';
+import { Chat } from './pages/Chat';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -18,7 +18,7 @@ function App() {
             path="/chat"
             element={
               <PrivateRoute>
-                <ChatPage />
+                <Chat />
               </PrivateRoute>
             }
           />

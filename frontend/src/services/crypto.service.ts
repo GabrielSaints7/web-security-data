@@ -350,210 +350,6 @@ export class CryptoService {
     }
   }
 
-  // ============= FUNÇÕES PARA GRUPOS =============
-
-  /**
-   * Gera chave AES-256 simétrica para grupo
-   */
-  static async generateGroupKey(): Promise<CryptoKey> {
-    try {
-      console.log("🔐 [CRYPTO-GROUP] Gerando chave AES-256 para grupo...");
-
-      const key = await crypto.subtle.generateKey(
-        {
-          name: "AES-GCM",
-          length: 256,
-        },
-        true, // Extraível
-        ["encrypt", "decrypt"]
-      );
-
-      console.log("✅ [CRYPTO-GROUP] Chave do grupo gerada com sucesso");
-
-      return key;
-    } catch (error) {
-      console.error("❌ [CRYPTO-GROUP] Erro ao gerar chave do grupo:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Exporta chave do grupo como raw bytes
-   */
-  static async exportGroupKey(key: CryptoKey): Promise<ArrayBuffer> {
-    try {
-      const exported = await crypto.subtle.exportKey("raw", key);
-      console.log(
-        "✅ [CRYPTO-GROUP] Chave do grupo exportada:",
-        exported.byteLength,
-        "bytes"
-      );
-      return exported;
-    } catch (error) {
-      console.error(
-        "❌ [CRYPTO-GROUP] Erro ao exportar chave do grupo:",
-        error
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Importa chave do grupo de raw bytes
-   */
-  static async importGroupKey(keyBytes: ArrayBuffer): Promise<CryptoKey> {
-    try {
-      console.log("📥 [CRYPTO-GROUP] Importando chave do grupo...");
-
-      const key = await crypto.subtle.importKey(
-        "raw",
-        keyBytes,
-        {
-          name: "AES-GCM",
-          length: 256,
-        },
-        true,
-        ["encrypt", "decrypt"]
-      );
-
-      console.log("✅ [CRYPTO-GROUP] Chave do grupo importada com sucesso");
-
-      return key;
-    } catch (error) {
-      console.error(
-        "❌ [CRYPTO-GROUP] Erro ao importar chave do grupo:",
-        error
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Cifra chave do grupo para um membro específico usando ECDH
-   */
-  static async encryptGroupKeyForMember(
-    groupKey: ArrayBuffer,
-    memberPublicKeyRaw: ArrayBuffer
-  ): Promise<{ encryptedKey: string; ephemeralPublicKey: string }> {
-    try {
-      console.log("🔐 [CRYPTO-GROUP] Cifrando chave do grupo para membro...");
-
-      // 1. Gerar par efêmero
-      const ephemeralKeys = await this.generateKeyPair();
-
-      // 2. Importar chave pública do membro
-      const memberPublicKey = await this.importPublicKey(memberPublicKeyRaw);
-
-      // 3. Computar segredo compartilhado
-      const sharedSecret = await this.computeSharedSecret(
-        ephemeralKeys.privateKey,
-        memberPublicKey
-      );
-
-      // 4. Derivar chave AES
-      const wrapKey = await this.deriveAESKey(sharedSecret);
-
-      // 5. Cifrar a chave do grupo
-      const groupKeyB64 = this.arrayBufferToBase64(groupKey);
-      const { encryptedData, nonce } = await this.encryptMessage(
-        groupKeyB64,
-        wrapKey
-      );
-
-      // 6. Combinar encryptedData e nonce
-      const combined = `${encryptedData}:${nonce}`;
-
-      console.log("✅ [CRYPTO-GROUP] Chave do grupo cifrada para membro");
-
-      return {
-        encryptedKey: combined,
-        ephemeralPublicKey: this.arrayBufferToBase64(
-          ephemeralKeys.publicKeyRaw
-        ),
-      };
-    } catch (error) {
-      console.error("❌ [CRYPTO-GROUP] Erro ao cifrar chave do grupo:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Decifra chave do grupo usando chave privada do membro
-   */
-  static async decryptGroupKey(
-    encryptedKey: string,
-    ephemeralPublicKeyB64: string,
-    myPrivateKey: CryptoKey
-  ): Promise<ArrayBuffer> {
-    try {
-      console.log("🔓 [CRYPTO-GROUP] Decifrando chave do grupo...");
-
-      // 1. Separar dados cifrados e nonce
-      const [encryptedData, nonce] = encryptedKey.split(":");
-
-      if (!encryptedData || !nonce) {
-        throw new Error("Formato de chave cifrada inválido");
-      }
-
-      // 2. Importar chave pública efêmera
-      const ephemeralPublicKeyRaw = this.base64ToArrayBuffer(
-        ephemeralPublicKeyB64
-      );
-      const ephemeralPublicKey = await this.importPublicKey(
-        ephemeralPublicKeyRaw
-      );
-
-      // 3. Computar segredo compartilhado
-      const sharedSecret = await this.computeSharedSecret(
-        myPrivateKey,
-        ephemeralPublicKey
-      );
-
-      // 4. Derivar chave AES
-      const wrapKey = await this.deriveAESKey(sharedSecret);
-
-      // 5. Decifrar
-      const groupKeyB64 = await this.decryptMessage(
-        encryptedData,
-        nonce,
-        wrapKey
-      );
-
-      console.log("✅ [CRYPTO-GROUP] Chave do grupo decifrada");
-
-      return this.base64ToArrayBuffer(groupKeyB64);
-    } catch (error) {
-      console.error(
-        "❌ [CRYPTO-GROUP] Erro ao decifrar chave do grupo:",
-        error
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Cifra mensagem de grupo com a chave do grupo
-   */
-  static async encryptGroupMessage(
-    message: string,
-    groupKey: CryptoKey
-  ): Promise<{ encryptedData: string; nonce: string }> {
-    console.log("🔒 [CRYPTO-GROUP] Cifrando mensagem de grupo...");
-    return await this.encryptMessage(message, groupKey);
-  }
-
-  /**
-   * Decifra mensagem de grupo com a chave do grupo
-   */
-  static async decryptGroupMessage(
-    encryptedData: string,
-    nonce: string,
-    groupKey: CryptoKey
-  ): Promise<string> {
-    console.log("🔓 [CRYPTO-GROUP] Decifrando mensagem de grupo...");
-    return await this.decryptMessage(encryptedData, nonce, groupKey);
-  }
-
   // frontend/src/services/crypto.service.ts
 
   // 🔧 SUBSTITUIR estas 3 funções:
@@ -739,6 +535,233 @@ export class CryptoService {
 
       throw new Error("Falha ao decifrar chave privada: " + error.message);
     }
+  }
+
+  // ⭐ ADICIONAR estas funções ao final da classe CryptoService:
+
+  // ============= FUNÇÕES DE GRUPO =============
+
+  /**
+   * Gera chave simétrica AES-256 para o grupo
+   */
+  static async generateGroupKey(): Promise<CryptoKey> {
+    try {
+      console.log("🔐 [CRYPTO-GROUP] Gerando chave AES-256 para grupo...");
+
+      const key = await crypto.subtle.generateKey(
+        {
+          name: "AES-GCM",
+          length: 256,
+        },
+        true, // Extraível
+        ["encrypt", "decrypt"]
+      );
+
+      console.log("✅ [CRYPTO-GROUP] Chave do grupo gerada");
+
+      return key;
+    } catch (error) {
+      console.error("❌ [CRYPTO-GROUP] Erro ao gerar chave do grupo:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Exporta chave do grupo como raw bytes
+   */
+  static async exportGroupKey(key: CryptoKey): Promise<ArrayBuffer> {
+    try {
+      const exported = await crypto.subtle.exportKey("raw", key);
+      console.log(
+        "✅ [CRYPTO-GROUP] Chave do grupo exportada:",
+        exported.byteLength,
+        "bytes"
+      );
+      return exported;
+    } catch (error) {
+      console.error(
+        "❌ [CRYPTO-GROUP] Erro ao exportar chave do grupo:",
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Importa chave do grupo de raw bytes
+   */
+  static async importGroupKey(keyBytes: ArrayBuffer): Promise<CryptoKey> {
+    try {
+      console.log("📥 [CRYPTO-GROUP] Importando chave do grupo...");
+
+      const key = await crypto.subtle.importKey(
+        "raw",
+        keyBytes,
+        {
+          name: "AES-GCM",
+          length: 256,
+        },
+        true,
+        ["encrypt", "decrypt"]
+      );
+
+      console.log("✅ [CRYPTO-GROUP] Chave do grupo importada");
+
+      return key;
+    } catch (error) {
+      console.error(
+        "❌ [CRYPTO-GROUP] Erro ao importar chave do grupo:",
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Cifra chave do grupo para um membro específico
+   */
+  static async encryptGroupKeyForMember(
+    groupKey: ArrayBuffer,
+    memberPublicKeyRaw: ArrayBuffer
+  ): Promise<{ encryptedGroupKey: string; ephemeralPublicKey: string }> {
+    try {
+      console.log("🔐 [CRYPTO-GROUP] Cifrando chave do grupo para membro...");
+
+      // 1. Gerar par efêmero
+      const ephemeralKeys = await this.generateKeyPair();
+
+      // 2. Importar chave pública do membro
+      const memberPublicKey = await this.importPublicKey(memberPublicKeyRaw);
+
+      // 3. Computar segredo compartilhado
+      const sharedSecret = await this.computeSharedSecret(
+        ephemeralKeys.privateKey,
+        memberPublicKey
+      );
+
+      // 4. Derivar chave AES de wrapping
+      const wrapKey = await this.deriveAESKey(sharedSecret);
+
+      // 5. Converter groupKey para Base64 e depois para bytes
+      const groupKeyB64 = this.arrayBufferToBase64(groupKey);
+      const groupKeyBytes = new TextEncoder().encode(groupKeyB64);
+
+      // 6. Cifrar a chave do grupo
+      const nonce = crypto.getRandomValues(new Uint8Array(12));
+      const encryptedData = await crypto.subtle.encrypt(
+        {
+          name: "AES-GCM",
+          iv: nonce,
+        },
+        wrapKey,
+        groupKeyBytes
+      );
+
+      // 7. Combinar encryptedData e nonce
+      const combined =
+        this.arrayBufferToBase64(encryptedData) +
+        ":" +
+        this.arrayBufferToBase64(nonce);
+
+      console.log("✅ [CRYPTO-GROUP] Chave do grupo cifrada para membro");
+
+      return {
+        encryptedGroupKey: combined,
+        ephemeralPublicKey: this.arrayBufferToBase64(
+          ephemeralKeys.publicKeyRaw
+        ),
+      };
+    } catch (error) {
+      console.error("❌ [CRYPTO-GROUP] Erro ao cifrar chave do grupo:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Decifra chave do grupo
+   */
+  static async decryptGroupKey(
+    encryptedGroupKey: string,
+    ephemeralPublicKeyB64: string,
+    myPrivateKey: CryptoKey
+  ): Promise<ArrayBuffer> {
+    try {
+      console.log("🔓 [CRYPTO-GROUP] Decifrando chave do grupo...");
+
+      // 1. Separar dados cifrados e nonce
+      const [encryptedData, nonce] = encryptedGroupKey.split(":");
+
+      if (!encryptedData || !nonce) {
+        throw new Error("Formato de chave cifrada inválido");
+      }
+
+      // 2. Importar chave pública efêmera
+      const ephemeralPublicKeyRaw = this.base64ToArrayBuffer(
+        ephemeralPublicKeyB64
+      );
+      const ephemeralPublicKey = await this.importPublicKey(
+        ephemeralPublicKeyRaw
+      );
+
+      // 3. Computar segredo compartilhado
+      const sharedSecret = await this.computeSharedSecret(
+        myPrivateKey,
+        ephemeralPublicKey
+      );
+
+      // 4. Derivar chave AES
+      const wrapKey = await this.deriveAESKey(sharedSecret);
+
+      // 5. Decifrar
+      const encryptedBuffer = this.base64ToArrayBuffer(encryptedData);
+      const nonceBuffer = this.base64ToArrayBuffer(nonce);
+
+      const decryptedData = await crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv: nonceBuffer,
+        },
+        wrapKey,
+        encryptedBuffer
+      );
+
+      // 6. Converter de volta para ArrayBuffer
+      const groupKeyB64 = new TextDecoder().decode(decryptedData);
+      const groupKeyBuffer = this.base64ToArrayBuffer(groupKeyB64);
+
+      console.log("✅ [CRYPTO-GROUP] Chave do grupo decifrada");
+
+      return groupKeyBuffer;
+    } catch (error) {
+      console.error(
+        "❌ [CRYPTO-GROUP] Erro ao decifrar chave do grupo:",
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Cifra mensagem de grupo
+   */
+  static async encryptGroupMessage(
+    message: string,
+    groupKey: CryptoKey
+  ): Promise<{ encryptedData: string; nonce: string }> {
+    console.log("🔒 [CRYPTO-GROUP] Cifrando mensagem de grupo...");
+    return await this.encryptMessage(message, groupKey);
+  }
+
+  /**
+   * Decifra mensagem de grupo
+   */
+  static async decryptGroupMessage(
+    encryptedData: string,
+    nonce: string,
+    groupKey: CryptoKey
+  ): Promise<string> {
+    console.log("🔓 [CRYPTO-GROUP] Decifrando mensagem de grupo...");
+    return await this.decryptMessage(encryptedData, nonce, groupKey);
   }
 }
 
