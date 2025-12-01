@@ -24,7 +24,7 @@ class SocketService {
 
     // Evento: conectado
     this.socket.on("connect", () => {
-      console.log("✅ [SOCKET] Conectado ao servidor");
+      console.log("[SOCKET] Conectado ao servidor");
       console.log("  Socket ID:", this.socket?.id);
 
       // Registrar usuário
@@ -34,7 +34,7 @@ class SocketService {
 
     // Evento: erro de conexão
     this.socket.on("connect_error", (error) => {
-      console.error("❌ [SOCKET] Erro de conexão:", error.message);
+      console.error("[SOCKET] Erro de conexão:", error.message);
     });
 
     // Evento: desconectado
@@ -47,9 +47,9 @@ class SocketService {
       }
     });
 
-    // ⭐ Evento: mensagem recebida
+    // Evento: mensagem recebida
     this.socket.on("message:receive", (message) => {
-      console.log("📨 [SOCKET] Nova mensagem recebida via WebSocket");
+      console.log("[SOCKET] Nova mensagem recebida via WebSocket");
       console.log("  De:", message.senderId);
       console.log(
         "  Dados cifrados (primeiros 50):",
@@ -61,7 +61,7 @@ class SocketService {
         try {
           handler(message);
         } catch (error) {
-          console.error("❌ [SOCKET] Erro ao processar mensagem:", error);
+          console.error("[SOCKET] Erro ao processar mensagem:", error);
         }
       });
     });
@@ -69,7 +69,7 @@ class SocketService {
     return this.socket;
   }
 
-  // ⭐ Adicionar handler para mensagens recebidas
+  // Adicionar handler para mensagens recebidas
   onMessage(handler: (message: any) => void): () => void {
     console.log("👂 [SOCKET] Registrando listener de mensagens");
     this.messageHandlers.add(handler);

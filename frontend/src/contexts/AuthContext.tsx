@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const user = JSON.parse(savedUser);
           const privateKeyJWK = JSON.parse(savedPrivateKeyJWK);
 
-          console.log("🔑 [AUTH] Recuperando chaves do localStorage...");
+          console.log(" [AUTH] Recuperando chaves do localStorage...");
 
           // Importar chave privada
           const privKey = await crypto.subtle.importKey(
@@ -63,14 +63,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const pubKeyRaw = CryptoService.base64ToArrayBuffer(publicKeyRawB64);
           const pubKey = await CryptoService.importPublicKey(pubKeyRaw);
 
-          console.log("✅ [AUTH] Chaves recuperadas do localStorage");
+          console.log("[AUTH] Chaves recuperadas do localStorage");
 
           setUser(user);
           setPrivateKey(privKey);
           setPublicKey(pubKey);
           setPublicKeyRaw(pubKeyRaw);
         } catch (error) {
-          console.error("❌ [AUTH] Erro ao recuperar chaves:", error);
+          console.error("[AUTH] Erro ao recuperar chaves:", error);
           // Limpar dados corrompidos
           localStorage.removeItem("user");
           localStorage.removeItem("privateKeyJWK");
@@ -92,17 +92,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const keys = await CryptoService.generateKeyPair();
       const publicKeyB64 = CryptoService.arrayBufferToBase64(keys.publicKeyRaw);
 
-      console.log("✅ [AUTH] Chaves geradas");
+      console.log("[AUTH] Chaves geradas");
       console.log(
         "  Chave pública (primeiros 30 chars):",
         publicKeyB64.substring(0, 30)
       );
 
-      // 2. ⭐ CIFRAR CHAVE PRIVADA COM SENHA
-      console.log("🔒 [AUTH] Cifrando chave privada com senha...");
+      // 2. CIFRAR CHAVE PRIVADA COM SENHA
+      console.log("[AUTH] Cifrando chave privada com senha...");
       const { encryptedPrivateKey, salt, iv } =
         await CryptoService.encryptPrivateKey(keys.privateKey, password);
-      console.log("✅ [AUTH] Chave privada cifrada");
+      console.log("[AUTH] Chave privada cifrada");
 
       const response = await fetch("http://localhost:3000/auth/register", {
         method: "POST",
@@ -132,7 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setPublicKey(keys.publicKey);
       setPublicKeyRaw(keys.publicKeyRaw);
 
-      // 5. ⭐ Salvar no localStorage (apenas para a sessão)
+      // 5. Salvar no localStorage (apenas para a sessão)
       localStorage.setItem("user", JSON.stringify(data));
       const privateKeyJWK = await crypto.subtle.exportKey(
         "jwk",
@@ -140,15 +140,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
       localStorage.setItem("privateKeyJWK", JSON.stringify(privateKeyJWK));
 
-      console.log("✅ [AUTH] Registro concluído com sucesso");
+      console.log("[AUTH] Registro concluído com sucesso");
     } catch (error) {
-      console.error("❌ [AUTH] Erro no registro:", error);
+      console.error("[AUTH] Erro no registro:", error);
       throw error;
     }
   };
 
   const login = async (email: string, password: string) => {
-    console.log("🔐 [AUTH] Iniciando login...");
+    console.log("[AUTH] Iniciando login...");
 
     try {
       const response = await fetch("http://localhost:3000/auth/login", {
@@ -163,24 +163,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json();
 
-      console.log("✅ [AUTH] Login bem-sucedido:", data.name);
+      console.log("[AUTH] Login bem-sucedido:", data.name);
 
-      // 2. ⭐ VERIFICAR SE TEM CHAVE PRIVADA CIFRADA NO BANCO
+      // 2. VERIFICAR SE TEM CHAVE PRIVADA CIFRADA NO BANCO
       if (!data.encryptedPrivateKey || !data.salt || !data.iv) {
         throw new Error(
           "Chave privada não encontrada. Faça cadastro novamente."
         );
       }
 
-      // 3. ⭐ DECIFRAR CHAVE PRIVADA COM SENHA
-      console.log("🔓 [AUTH] Decifrando chave privada...");
+      // 3. DECIFRAR CHAVE PRIVADA COM SENHA
+      console.log(" [AUTH] Decifrando chave privada...");
       const privKey = await CryptoService.decryptPrivateKey(
         data.encryptedPrivateKey,
         data.salt,
         data.iv,
         password
       );
-      console.log("✅ [AUTH] Chave privada decifrada");
+      console.log("[AUTH] Chave privada decifrada");
 
       // 4. Importar chave pública
       const pubKeyRaw = CryptoService.base64ToArrayBuffer(data.publicKey);
@@ -192,14 +192,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setPublicKey(pubKey);
       setPublicKeyRaw(pubKeyRaw);
 
-      // 6. ⭐ Salvar no localStorage (apenas para a sessão)
+      // 6. Salvar no localStorage (apenas para a sessão)
       localStorage.setItem("user", JSON.stringify(data));
       const privateKeyJWK = await crypto.subtle.exportKey("jwk", privKey);
       localStorage.setItem("privateKeyJWK", JSON.stringify(privateKeyJWK));
 
-      console.log("✅ [AUTH] Login concluído com sucesso");
+      console.log("[AUTH] Login concluído com sucesso");
     } catch (error) {
-      console.error("❌ [AUTH] Erro no login:", error);
+      console.error("[AUTH] Erro no login:", error);
       throw error;
     }
   };

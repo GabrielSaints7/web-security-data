@@ -21,7 +21,7 @@ export class CryptoService {
     publicKeyRaw: ArrayBuffer;
   }> {
     try {
-      console.log("🔐 [CRYPTO] Gerando par de chaves ECDH (P-256)...");
+      console.log("[CRYPTO] Gerando par de chaves ECDH (P-256)...");
 
       // Gerar par de chaves ECDH
       const keyPair = await crypto.subtle.generateKey(
@@ -33,7 +33,7 @@ export class CryptoService {
         ["deriveKey", "deriveBits"]
       );
 
-      console.log("✅ [CRYPTO] Par de chaves ECDH gerado com sucesso");
+      console.log("[CRYPTO] Par de chaves ECDH gerado com sucesso");
 
       // Exportar chave pública para formato raw (para enviar ao servidor)
       const publicKeyRaw = await crypto.subtle.exportKey(
@@ -57,7 +57,7 @@ export class CryptoService {
         publicKeyRaw: publicKeyRaw,
       };
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao gerar par de chaves:", error);
+      console.error("[CRYPTO] Erro ao gerar par de chaves:", error);
       throw error;
     }
   }
@@ -67,7 +67,7 @@ export class CryptoService {
    */
   static async importPublicKey(publicKeyRaw: ArrayBuffer): Promise<CryptoKey> {
     try {
-      console.log("📥 [CRYPTO] Importando chave pública...");
+      console.log("[CRYPTO] Importando chave pública...");
       console.log("  Tamanho:", publicKeyRaw.byteLength, "bytes");
 
       const publicKey = await crypto.subtle.importKey(
@@ -81,11 +81,11 @@ export class CryptoService {
         []
       );
 
-      console.log("✅ [CRYPTO] Chave pública importada com sucesso");
+      console.log("[CRYPTO] Chave pública importada com sucesso");
 
       return publicKey;
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao importar chave pública:", error);
+      console.error("[CRYPTO] Erro ao importar chave pública:", error);
       throw error;
     }
   }
@@ -111,7 +111,7 @@ export class CryptoService {
 
       const base64 = btoa(binary);
 
-      console.log("✅ [CRYPTO] Conversão para Base64 concluída");
+      console.log("[CRYPTO] Conversão para Base64 concluída");
       console.log(
         "  Tamanho:",
         bytes.length,
@@ -122,7 +122,7 @@ export class CryptoService {
 
       return base64;
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao converter para Base64:", error);
+      console.error("[CRYPTO] Erro ao converter para Base64:", error);
       throw error;
     }
   }
@@ -149,12 +149,12 @@ export class CryptoService {
         bytes[i] = binary.charCodeAt(i);
       }
 
-      console.log("✅ [CRYPTO] Conversão de Base64 concluída");
+      console.log("[CRYPTO] Conversão de Base64 concluída");
       console.log("  Tamanho:", bytes.length, "bytes");
 
       return bytes.buffer;
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao converter Base64:", error);
+      console.error("[CRYPTO] Erro ao converter Base64:", error);
       console.error(
         "  String recebida (primeiros 50 chars):",
         base64?.substring(0, 50)
@@ -173,7 +173,7 @@ export class CryptoService {
     theirPublicKey: CryptoKey
   ): Promise<ArrayBuffer> {
     try {
-      console.log("🔑 [CRYPTO] Computando segredo compartilhado (ECDH)...");
+      console.log(" [CRYPTO] Computando segredo compartilhado (ECDH)...");
 
       // Derivar bits do segredo compartilhado
       const sharedSecret = await crypto.subtle.deriveBits(
@@ -185,7 +185,7 @@ export class CryptoService {
         256 // 256 bits
       );
 
-      console.log("✅ [CRYPTO] Segredo compartilhado calculado");
+      console.log("[CRYPTO] Segredo compartilhado calculado");
       console.log("  Tamanho:", sharedSecret.byteLength, "bytes");
       console.log(
         "  Primeiros 8 bytes:",
@@ -194,10 +194,7 @@ export class CryptoService {
 
       return sharedSecret;
     } catch (error) {
-      console.error(
-        "❌ [CRYPTO] Erro ao computar segredo compartilhado:",
-        error
-      );
+      console.error("[CRYPTO] Erro ao computar segredo compartilhado:", error);
       throw error;
     }
   }
@@ -210,7 +207,7 @@ export class CryptoService {
   static async deriveAESKey(sharedSecret: ArrayBuffer): Promise<CryptoKey> {
     try {
       console.log(
-        "🔐 [CRYPTO] Derivando chave AES-256 do segredo compartilhado..."
+        "[CRYPTO] Derivando chave AES-256 do segredo compartilhado..."
       );
 
       // Importar segredo compartilhado
@@ -239,11 +236,11 @@ export class CryptoService {
         ["encrypt", "decrypt"]
       );
 
-      console.log("✅ [CRYPTO] Chave AES-256-GCM derivada com sucesso");
+      console.log("[CRYPTO] Chave AES-256-GCM derivada com sucesso");
 
       return aesKey;
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao derivar chave AES:", error);
+      console.error("[CRYPTO] Erro ao derivar chave AES:", error);
       throw error;
     }
   }
@@ -258,7 +255,7 @@ export class CryptoService {
     aesKey: CryptoKey
   ): Promise<{ encryptedData: string; nonce: string }> {
     try {
-      console.log("🔒 [CRYPTO] Cifrando mensagem com AES-256-GCM...");
+      console.log("[CRYPTO] Cifrando mensagem com AES-256-GCM...");
       console.log("  Mensagem (primeiros 50 chars):", message.substring(0, 50));
 
       // Gerar nonce (IV) aleatório
@@ -281,7 +278,7 @@ export class CryptoService {
       const encryptedData = this.arrayBufferToBase64(encryptedBuffer);
       const nonceB64 = this.arrayBufferToBase64(nonce);
 
-      console.log("✅ [CRYPTO] Mensagem cifrada com sucesso");
+      console.log("[CRYPTO] Mensagem cifrada com sucesso");
       console.log(
         "  Dados cifrados (primeiros 50 chars):",
         encryptedData.substring(0, 50)
@@ -299,7 +296,7 @@ export class CryptoService {
         nonce: nonceB64,
       };
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao cifrar mensagem:", error);
+      console.error("[CRYPTO] Erro ao cifrar mensagem:", error);
       throw error;
     }
   }
@@ -313,7 +310,7 @@ export class CryptoService {
     aesKey: CryptoKey
   ): Promise<string> {
     try {
-      console.log("🔓 [CRYPTO] Decifrando mensagem com AES-256-GCM...");
+      console.log(" [CRYPTO] Decifrando mensagem com AES-256-GCM...");
 
       const encryptedBuffer = this.base64ToArrayBuffer(encryptedData);
       const nonceBuffer = this.base64ToArrayBuffer(nonce);
@@ -335,7 +332,7 @@ export class CryptoService {
 
       const decryptedMessage = new TextDecoder().decode(decryptedBuffer);
 
-      console.log("✅ [CRYPTO] Mensagem decifrada com sucesso");
+      console.log("[CRYPTO] Mensagem decifrada com sucesso");
       console.log(
         "  Mensagem (primeiros 50 chars):",
         decryptedMessage.substring(0, 50)
@@ -343,7 +340,7 @@ export class CryptoService {
 
       return decryptedMessage;
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao decifrar mensagem:", error);
+      console.error("[CRYPTO] Erro ao decifrar mensagem:", error);
       throw new Error(
         "Falha na descriptografia - chave incorreta ou dados corrompidos"
       );
@@ -362,7 +359,7 @@ export class CryptoService {
     salt: Uint8Array
   ): Promise<CryptoKey> {
     try {
-      console.log("🔑 [CRYPTO] Derivando chave da senha...");
+      console.log(" [CRYPTO] Derivando chave da senha...");
 
       // Codificar senha
       const passwordBytes = new TextEncoder().encode(password);
@@ -390,14 +387,14 @@ export class CryptoService {
           length: 256,
         },
         false, // Não extraível
-        ["encrypt", "decrypt"] // ⭐ CORRIGIDO: usar encrypt/decrypt
+        ["encrypt", "decrypt"] // CORRIGIDO: usar encrypt/decrypt
       );
 
-      console.log("✅ [CRYPTO] Chave derivada da senha");
+      console.log("[CRYPTO] Chave derivada da senha");
 
       return derivedKey;
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao derivar chave da senha:", error);
+      console.error("[CRYPTO] Erro ao derivar chave da senha:", error);
       throw error;
     }
   }
@@ -410,7 +407,7 @@ export class CryptoService {
     password: string
   ): Promise<{ encryptedPrivateKey: string; salt: string; iv: string }> {
     try {
-      console.log("🔒 [CRYPTO] Cifrando chave privada com senha...");
+      console.log("[CRYPTO] Cifrando chave privada com senha...");
 
       // 1. Gerar salt aleatório
       const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -448,7 +445,7 @@ export class CryptoService {
         privateKeyBytes
       );
 
-      console.log("✅ [CRYPTO] Chave privada cifrada com sucesso");
+      console.log("[CRYPTO] Chave privada cifrada com sucesso");
       console.log("  Tamanho cifrado:", encryptedData.byteLength, "bytes");
 
       return {
@@ -457,7 +454,7 @@ export class CryptoService {
         iv: this.arrayBufferToBase64(iv),
       };
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao cifrar chave privada:", error);
+      console.error("[CRYPTO] Erro ao cifrar chave privada:", error);
       console.error("  Detalhes:", error.message);
       throw error;
     }
@@ -473,7 +470,7 @@ export class CryptoService {
     password: string
   ): Promise<CryptoKey> {
     try {
-      console.log("🔓 [CRYPTO] Decifrando chave privada com senha...");
+      console.log(" [CRYPTO] Decifrando chave privada com senha...");
 
       // 1. Converter de Base64
       const encryptedData = this.base64ToArrayBuffer(encryptedPrivateKey);
@@ -522,11 +519,11 @@ export class CryptoService {
         ["deriveKey", "deriveBits"]
       );
 
-      console.log("✅ [CRYPTO] Chave privada decifrada com sucesso");
+      console.log("[CRYPTO] Chave privada decifrada com sucesso");
 
       return privateKey;
     } catch (error) {
-      console.error("❌ [CRYPTO] Erro ao decifrar chave privada:", error);
+      console.error("[CRYPTO] Erro ao decifrar chave privada:", error);
       console.error("  Detalhes:", error.message);
 
       if (error.name === "OperationError") {
@@ -537,7 +534,7 @@ export class CryptoService {
     }
   }
 
-  // ⭐ ADICIONAR estas funções ao final da classe CryptoService:
+  // ADICIONAR estas funções ao final da classe CryptoService:
 
   // ============= FUNÇÕES DE GRUPO =============
 
@@ -546,7 +543,7 @@ export class CryptoService {
    */
   static async generateGroupKey(): Promise<CryptoKey> {
     try {
-      console.log("🔐 [CRYPTO-GROUP] Gerando chave AES-256 para grupo...");
+      console.log("[CRYPTO-GROUP] Gerando chave AES-256 para grupo...");
 
       const key = await crypto.subtle.generateKey(
         {
@@ -557,11 +554,11 @@ export class CryptoService {
         ["encrypt", "decrypt"]
       );
 
-      console.log("✅ [CRYPTO-GROUP] Chave do grupo gerada");
+      console.log("[CRYPTO-GROUP] Chave do grupo gerada");
 
       return key;
     } catch (error) {
-      console.error("❌ [CRYPTO-GROUP] Erro ao gerar chave do grupo:", error);
+      console.error("[CRYPTO-GROUP] Erro ao gerar chave do grupo:", error);
       throw error;
     }
   }
@@ -573,16 +570,13 @@ export class CryptoService {
     try {
       const exported = await crypto.subtle.exportKey("raw", key);
       console.log(
-        "✅ [CRYPTO-GROUP] Chave do grupo exportada:",
+        "[CRYPTO-GROUP] Chave do grupo exportada:",
         exported.byteLength,
         "bytes"
       );
       return exported;
     } catch (error) {
-      console.error(
-        "❌ [CRYPTO-GROUP] Erro ao exportar chave do grupo:",
-        error
-      );
+      console.error("[CRYPTO-GROUP] Erro ao exportar chave do grupo:", error);
       throw error;
     }
   }
@@ -592,7 +586,7 @@ export class CryptoService {
    */
   static async importGroupKey(keyBytes: ArrayBuffer): Promise<CryptoKey> {
     try {
-      console.log("📥 [CRYPTO-GROUP] Importando chave do grupo...");
+      console.log("[CRYPTO-GROUP] Importando chave do grupo...");
 
       const key = await crypto.subtle.importKey(
         "raw",
@@ -605,14 +599,11 @@ export class CryptoService {
         ["encrypt", "decrypt"]
       );
 
-      console.log("✅ [CRYPTO-GROUP] Chave do grupo importada");
+      console.log("[CRYPTO-GROUP] Chave do grupo importada");
 
       return key;
     } catch (error) {
-      console.error(
-        "❌ [CRYPTO-GROUP] Erro ao importar chave do grupo:",
-        error
-      );
+      console.error("[CRYPTO-GROUP] Erro ao importar chave do grupo:", error);
       throw error;
     }
   }
@@ -625,7 +616,7 @@ export class CryptoService {
     memberPublicKeyRaw: ArrayBuffer
   ): Promise<{ encryptedGroupKey: string; ephemeralPublicKey: string }> {
     try {
-      console.log("🔐 [CRYPTO-GROUP] Cifrando chave do grupo para membro...");
+      console.log("[CRYPTO-GROUP] Cifrando chave do grupo para membro...");
 
       // 1. Gerar par efêmero
       const ephemeralKeys = await this.generateKeyPair();
@@ -663,7 +654,7 @@ export class CryptoService {
         ":" +
         this.arrayBufferToBase64(nonce);
 
-      console.log("✅ [CRYPTO-GROUP] Chave do grupo cifrada para membro");
+      console.log("[CRYPTO-GROUP] Chave do grupo cifrada para membro");
 
       return {
         encryptedGroupKey: combined,
@@ -672,7 +663,7 @@ export class CryptoService {
         ),
       };
     } catch (error) {
-      console.error("❌ [CRYPTO-GROUP] Erro ao cifrar chave do grupo:", error);
+      console.error("[CRYPTO-GROUP] Erro ao cifrar chave do grupo:", error);
       throw error;
     }
   }
@@ -686,7 +677,7 @@ export class CryptoService {
     myPrivateKey: CryptoKey
   ): Promise<ArrayBuffer> {
     try {
-      console.log("🔓 [CRYPTO-GROUP] Decifrando chave do grupo...");
+      console.log(" [CRYPTO-GROUP] Decifrando chave do grupo...");
 
       // 1. Separar dados cifrados e nonce
       const [encryptedData, nonce] = encryptedGroupKey.split(":");
@@ -729,14 +720,11 @@ export class CryptoService {
       const groupKeyB64 = new TextDecoder().decode(decryptedData);
       const groupKeyBuffer = this.base64ToArrayBuffer(groupKeyB64);
 
-      console.log("✅ [CRYPTO-GROUP] Chave do grupo decifrada");
+      console.log("[CRYPTO-GROUP] Chave do grupo decifrada");
 
       return groupKeyBuffer;
     } catch (error) {
-      console.error(
-        "❌ [CRYPTO-GROUP] Erro ao decifrar chave do grupo:",
-        error
-      );
+      console.error("[CRYPTO-GROUP] Erro ao decifrar chave do grupo:", error);
       throw error;
     }
   }
@@ -748,7 +736,7 @@ export class CryptoService {
     message: string,
     groupKey: CryptoKey
   ): Promise<{ encryptedData: string; nonce: string }> {
-    console.log("🔒 [CRYPTO-GROUP] Cifrando mensagem de grupo...");
+    console.log("[CRYPTO-GROUP] Cifrando mensagem de grupo...");
     return await this.encryptMessage(message, groupKey);
   }
 
@@ -760,7 +748,7 @@ export class CryptoService {
     nonce: string,
     groupKey: CryptoKey
   ): Promise<string> {
-    console.log("🔓 [CRYPTO-GROUP] Decifrando mensagem de grupo...");
+    console.log(" [CRYPTO-GROUP] Decifrando mensagem de grupo...");
     return await this.decryptMessage(encryptedData, nonce, groupKey);
   }
 }

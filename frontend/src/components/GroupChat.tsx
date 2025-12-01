@@ -53,7 +53,7 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
 
   const loadGroupKeyAndMessages = async () => {
     try {
-      console.log("🔐 [GROUP-CHAT] Carregando chave do grupo...");
+      console.log("[GROUP-CHAT] Carregando chave do grupo...");
 
       // 1. Decifrar chave do grupo
       const groupKeyRaw = await CryptoService.decryptGroupKey(
@@ -71,10 +71,10 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
       groupKeys[group.id] = groupKeyB64;
       localStorage.setItem("groupKeys", JSON.stringify(groupKeys));
 
-      console.log("✅ [GROUP-CHAT] Chave do grupo carregada");
+      console.log("[GROUP-CHAT] Chave do grupo carregada");
 
       // 2. Carregar mensagens
-      console.log("📜 [GROUP-CHAT] Carregando mensagens...");
+      console.log(" [GROUP-CHAT] Carregando mensagens...");
       const response = await fetch(
         `http://localhost:3000/chat/group/${group.id}/messages?userId=${
           user!.id
@@ -86,7 +86,7 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
       }
 
       const data = await response.json();
-      console.log(`📜 [GROUP-CHAT] ${data.length} mensagens encontradas`);
+      console.log(` [GROUP-CHAT] ${data.length} mensagens encontradas`);
 
       // 3. Descriptografar mensagens
       const decryptedMessages: GroupMessage[] = [];
@@ -108,7 +108,7 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
             decrypted: true,
           });
         } catch (error) {
-          console.error("❌ [GROUP-CHAT] Erro ao descriptografar:", msg.id);
+          console.error("[GROUP-CHAT] Erro ao descriptografar:", msg.id);
           decryptedMessages.push({
             id: msg.id,
             senderId: msg.senderId,
@@ -121,9 +121,9 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
       }
 
       setMessages(decryptedMessages);
-      console.log("✅ [GROUP-CHAT] Mensagens carregadas");
+      console.log("[GROUP-CHAT] Mensagens carregadas");
     } catch (error) {
-      console.error("❌ [GROUP-CHAT] Erro:", error);
+      console.error("[GROUP-CHAT] Erro:", error);
       alert("Erro ao carregar grupo: " + error.message);
     } finally {
       setLoading(false);
@@ -133,7 +133,7 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
   const decryptAndAddMessage = async (encryptedMessage: any) => {
     try {
       if (!groupKey) {
-        console.error("❌ [GROUP-CHAT] Chave do grupo não disponível");
+        console.error("[GROUP-CHAT] Chave do grupo não disponível");
         return;
       }
 
@@ -158,7 +158,7 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
         return [...prev, message];
       });
     } catch (error) {
-      console.error("❌ [GROUP-CHAT] Erro ao descriptografar:", error);
+      console.error("[GROUP-CHAT] Erro ao descriptografar:", error);
     }
   };
 
@@ -170,7 +170,7 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
     setSending(true);
 
     try {
-      console.log("📤 [GROUP-CHAT] Enviando mensagem...");
+      console.log("[GROUP-CHAT] Enviando mensagem...");
 
       // Cifrar mensagem
       const { encryptedData, nonce } = await CryptoService.encryptGroupMessage(
@@ -201,9 +201,9 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
       ]);
 
       setMessageInput("");
-      console.log("✅ [GROUP-CHAT] Mensagem enviada");
+      console.log("[GROUP-CHAT] Mensagem enviada");
     } catch (error) {
-      console.error("❌ [GROUP-CHAT] Erro ao enviar:", error);
+      console.error("[GROUP-CHAT] Erro ao enviar:", error);
       alert("Erro ao enviar mensagem");
     } finally {
       setSending(false);
@@ -263,7 +263,7 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
       setNewMemberEmail("");
       setShowAddMember(false);
     } catch (error: any) {
-      console.error("❌ [GROUP-CHAT] Erro:", error);
+      console.error("[GROUP-CHAT] Erro:", error);
       alert("Erro: " + error.message);
     }
   };
@@ -372,7 +372,7 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
                 onClick={handleDeleteGroup}
                 className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
               >
-                🗑️ Deletar
+                Deletar
               </button>
             </>
           )}
@@ -518,10 +518,11 @@ export function GroupChat({ group, onBack }: GroupChatProps) {
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
             disabled={sending || !messageInput.trim()}
           >
-            {sending ? "..." : "📤"}
+            {sending ? "..." : "Enviar"}
           </button>
         </div>
       </form>
     </div>
   );
 }
+

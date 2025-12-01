@@ -85,7 +85,7 @@ export function Chat() {
     // Listener para mensagens 1-1
     const unsubscribe = socketService.onMessage((data) => {
       if (data.receiverId === user.id && !data.groupId) {
-        console.log("📨 [CHAT] Mensagem 1-1 recebida");
+        console.log("[CHAT] Mensagem 1-1 recebida");
         decryptAndAddMessage(data);
       }
     });
@@ -108,7 +108,7 @@ export function Chat() {
 
   const loadUserChats = async () => {
     try {
-      console.log("📜 [CHAT] Carregando lista de chats...");
+      console.log(" [CHAT] Carregando lista de chats...");
 
       const response = await fetch(
         `http://localhost:3000/chat/user/${user!.id}/chats`
@@ -116,9 +116,9 @@ export function Chat() {
       const data = await response.json();
 
       setChats(data);
-      console.log(`✅ [CHAT] ${data.length} chats carregados`);
+      console.log(`[CHAT] ${data.length} chats carregados`);
     } catch (error) {
-      console.error("❌ [CHAT] Erro ao carregar chats:", error);
+      console.error("[CHAT] Erro ao carregar chats:", error);
     }
   };
 
@@ -170,14 +170,14 @@ export function Chat() {
     setMessages([]);
 
     try {
-      console.log(`📜 [CHAT] Carregando conversa com ${chat.name}`);
+      console.log(` [CHAT] Carregando conversa com ${chat.name}`);
 
       const response = await fetch(
         `http://localhost:3000/chat/conversations/${user!.id}/${chat.userId}`
       );
       const data = await response.json();
 
-      console.log(`📜 [CHAT] ${data.length} mensagens encontradas`);
+      console.log(` [CHAT] ${data.length} mensagens encontradas`);
 
       const decryptedMessages: Message[] = [];
 
@@ -246,7 +246,7 @@ export function Chat() {
             decrypted: true,
           });
         } catch (error) {
-          console.error("❌ [CHAT] Erro ao descriptografar:", msg.id, error);
+          console.error("[CHAT] Erro ao descriptografar:", msg.id, error);
           decryptedMessages.push({
             id: msg.id,
             senderId: msg.senderId,
@@ -258,9 +258,9 @@ export function Chat() {
       }
 
       setMessages(decryptedMessages);
-      console.log(`✅ [CHAT] ${decryptedMessages.length} mensagens carregadas`);
+      console.log(`[CHAT] ${decryptedMessages.length} mensagens carregadas`);
     } catch (error) {
-      console.error("❌ [CHAT] Erro ao carregar conversa:", error);
+      console.error("[CHAT] Erro ao carregar conversa:", error);
     } finally {
       setLoadingMessages(false);
     }
@@ -274,7 +274,7 @@ export function Chat() {
     setSendingMessage(true);
 
     try {
-      console.log("📤 [CHAT] Enviando mensagem...");
+      console.log("[CHAT] Enviando mensagem...");
 
       // Buscar chave pública do destinatário
       const response = await fetch(
@@ -351,9 +351,9 @@ export function Chat() {
       ]);
 
       setMessageInput("");
-      console.log("✅ [CHAT] Mensagem enviada");
+      console.log("[CHAT] Mensagem enviada");
     } catch (error: any) {
-      console.error("❌ [CHAT] Erro ao enviar:", error);
+      console.error("[CHAT] Erro ao enviar:", error);
       alert("Erro ao enviar mensagem: " + error.message);
     } finally {
       setSendingMessage(false);
@@ -362,7 +362,7 @@ export function Chat() {
 
   const decryptAndAddMessage = async (encryptedMessage: any) => {
     try {
-      console.log("📨 [CHAT] Descriptografando mensagem...");
+      console.log("[CHAT] Descriptografando mensagem...");
 
       if (!privateKey) {
         throw new Error("Chave privada não disponível");
@@ -416,9 +416,9 @@ export function Chat() {
         })
       );
 
-      console.log("✅ [CHAT] Mensagem descriptografada");
+      console.log("[CHAT] Mensagem descriptografada");
     } catch (error) {
-      console.error("❌ [CHAT] Erro ao descriptografar:", error);
+      console.error("[CHAT] Erro ao descriptografar:", error);
 
       setMessages((prev) => [
         ...prev,
@@ -445,9 +445,9 @@ export function Chat() {
       const data = await response.json();
 
       setGroups(data);
-      console.log(`✅ [CHAT] ${data.length} grupos carregados`);
+      console.log(`[CHAT] ${data.length} grupos carregados`);
     } catch (error) {
-      console.error("❌ [CHAT] Erro ao carregar grupos:", error);
+      console.error("[CHAT] Erro ao carregar grupos:", error);
     }
   };
 
@@ -683,7 +683,7 @@ export function Chat() {
                   className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
                   disabled={sendingMessage || !messageInput.trim()}
                 >
-                  {sendingMessage ? "..." : "📤"}
+                  {sendingMessage ? "..." : "Enviar "}
                 </button>
               </div>
             </form>

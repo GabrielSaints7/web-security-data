@@ -49,7 +49,7 @@ export function CreateGroup({ onClose, onGroupCreated }: CreateGroupProps) {
       });
 
       const members = await Promise.all(memberPromises);
-      console.log(`✅ [GROUP] ${members.length} membros encontrados`);
+      console.log(`[GROUP] ${members.length} membros encontrados`);
 
       // 3. Adicionar a mim mesmo como primeiro membro
       const allMembers = [
@@ -65,12 +65,12 @@ export function CreateGroup({ onClose, onGroupCreated }: CreateGroupProps) {
       );
 
       // 4. Gerar chave do grupo
-      console.log("🔐 [GROUP] Gerando chave do grupo...");
+      console.log("[GROUP] Gerando chave do grupo...");
       const groupKey = await CryptoService.generateGroupKey();
       const groupKeyRaw = await CryptoService.exportGroupKey(groupKey);
 
       // 5. Cifrar chave do grupo para cada membro
-      console.log("🔒 [GROUP] Cifrando chave para cada membro...");
+      console.log("[GROUP] Cifrando chave para cada membro...");
       const memberKeysPromises = allMembers.map(async (member) => {
         const memberPublicKeyRaw = CryptoService.base64ToArrayBuffer(
           member.publicKey
@@ -89,10 +89,10 @@ export function CreateGroup({ onClose, onGroupCreated }: CreateGroupProps) {
       });
 
       const memberKeys = await Promise.all(memberKeysPromises);
-      console.log("✅ [GROUP] Chave cifrada para todos os membros");
+      console.log("[GROUP] Chave cifrada para todos os membros");
 
       // 6. Criar grupo no servidor
-      console.log("📤 [GROUP] Enviando para o servidor...");
+      console.log("[GROUP] Enviando para o servidor...");
       const response = await fetch("http://localhost:3000/chat/group", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,7 +110,7 @@ export function CreateGroup({ onClose, onGroupCreated }: CreateGroupProps) {
       }
 
       const group = await response.json();
-      console.log("✅ [GROUP] Grupo criado com sucesso:", group.id);
+      console.log("[GROUP] Grupo criado com sucesso:", group.id);
 
       // 7. Salvar chave do grupo no localStorage (para uso posterior)
       const groupKeyB64 = CryptoService.arrayBufferToBase64(groupKeyRaw);
@@ -122,7 +122,7 @@ export function CreateGroup({ onClose, onGroupCreated }: CreateGroupProps) {
       onGroupCreated();
       onClose();
     } catch (error: any) {
-      console.error("❌ [GROUP] Erro ao criar grupo:", error);
+      console.error("[GROUP] Erro ao criar grupo:", error);
       setError(error.message);
     } finally {
       setLoading(false);
